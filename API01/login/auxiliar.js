@@ -10,24 +10,23 @@ export let options = {
         http_req_duration: ['p(95)<2000'], 
     },
 };
+const loginPayload = JSON.stringify({
+    Nombre_Usuario: __ENV.NOMBRE_USUARIO_AUXILIAR,
+    Contraseña: __ENV.CONTRASENA_AUXILIAR,
+});
+
+const params = {
+    headers: { 'Content-Type': 'application/json' },
+    tags: { name: 'LoginAuxiliar' } 
+};
 
 export default function () {
     const url = getBaseUrl() + '/api/login/auxiliar';
     
-    const payload = JSON.stringify({
-        Nombre_Usuario: __ENV.NOMBRE_USUARIO_AUXILIAR,
-        Contraseña: __ENV.CONTRASENA_AUXILIAR,
-    });
-
-    const params = {
-        headers: { 'Content-Type': 'application/json' },
-        tags: { name: 'LoginAuxiliar' } 
-    };
-
-    const response = http.post(url, payload, params);
+    const response = http.post(url, loginPayload, params);
 
     if (response.status !== 200) {
-        console.error(`❌ Error Login [${response.status}]: ${response.body}`);
+        console.error(`❌ Error Login [${response.status}] URL: ${url} - Body: ${response.body}`);
     }
 
     check(response, {
