@@ -1,23 +1,36 @@
+import { getToken } from '../../directivo.js';
 import http from 'k6/http';
 import { check } from 'k6';
-import { getBaseUrl } from './utils/urlManager.js';
+import { getBaseUrl } from '../../utils/urlManager.js';
 
-export function getToken() {
-  const baseUrl = getBaseUrl();
-  const loginUrl = baseUrl + '/api/login/directivo';
-  const loginPayload = JSON.stringify({
-    Nombre_Usuario: __ENV.NOMBRE_USUARIO_DIRECTIVO,
-    Contraseña: __ENV.CONTRASENA_DIRECTIVO,
-  });
+export let options = {
+  vus: 12,
+  duration: '30s',
+};
 
-  const headers = { 'Content-Type': 'application/json' };
-  const response = http.post(loginUrl, loginPayload, { headers });
+const dniAuxiliar = __ENV.DNI_AUXILIAR;
 
-  check(response, {
-    'Login exitoso': (r) => r.status === 200,
-  });
-
-  const token = response.json('data.token');
-  return token; 
+export function setup() {
+  const token = getToken();
+  return { token: token }; 
 }
 
+export default function (data) {
+  const token = data.token; 
+  
+  const baseUrl = getBaseUrl();
+  const getUrl = baseUrl + `/api/auxiliares/${dniAuxiliar}/estado`;
+
+  const body = JSON.stringify({}); 
+
+  const response = http.request('PATCH', getUrl, body, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  check(response, {
+    'PATCH request fue exitoso': (r) => r.status === 200,
+  });
+}
