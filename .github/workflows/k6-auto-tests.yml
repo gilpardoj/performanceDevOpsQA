@@ -1,0 +1,111 @@
+name: K6 Validations
+
+on:
+  # Se dispara cuando abres un PR hacia main o develop
+  pull_request:
+    branches: [ main, develop ]
+    paths: [ 'API01/**/*.js' ] # Solo si tocas archivos de la API
+
+  # Mantén el workflow_dispatch si quieres pruebas manuales
+  workflow_dispatch: 
+    inputs:
+      environment:
+        description: 'Ambiente'
+        default: 'CERT'
+        type: choice
+        options: [CERT, DEV]
+
+jobs:
+  validate_pr:
+    runs-on: ubuntu-latest
+    env:
+      # URLs
+      URL_CERT: "https://api01-siasis-cert.vercel.app"
+      URL_CERT_INS2: "https://api01-siasis-cert-ins2.vercel.app"
+      URL_CERT_INS3: "https://api01-siasis-cert-ins3.vercel.app"
+      URL_DEV: "https://api01-siasis-dev.vercel.app"
+      URL_DEV_INS2: "https://api01-siasis-dev-ins2.vercel.app"
+      URL_PROD: "https://ie20935-api01-ins1.vercel.app"
+      URL_PROD_INS2: "https://ie20935-api01-ins2.vercel.app"
+      URL_PROD_INS3: "https://ie20935-api01-ins3.vercel.app"
+      
+      # En PRs, siempre prueba en CERT (recomendado)
+      TARGET_ENV: ${{ github.event.inputs.environment || 'CERT' }}
+
+      # Credenciales desde GitHub Secrets
+      NOMBRE_USUARIO_DIRECTIVO: ${{ secrets.NOMBRE_USUARIO_DIRECTIVO }}
+      CONTRASENA_DIRECTIVO: ${{ secrets.CONTRASENA_DIRECTIVO }}
+      NOMBRE_USUARIO_AUXILIAR: ${{ secrets.NOMBRE_USUARIO_AUXILIAR }}
+      CONTRASENA_AUXILIAR: ${{ secrets.CONTRASENA_AUXILIAR }}
+      NOMBRE_USUARIO_NO_TUTOR: ${{ secrets.NOMBRE_USUARIO_NO_TUTOR }}
+      CONTRASENA_NO_TUTOR: ${{ secrets.CONTRASENA_NO_TUTOR }}
+      NOMBRE_USUARIO_PERSONAL_ADMIN: ${{ secrets.NOMBRE_USUARIO_PERSONAL_ADMIN }}
+      CONTRASENA_PERSONAL_ADMIN: ${{ secrets.CONTRASENA_PERSONAL_ADMIN }}
+      NOMBRE_USUARIO_PROFESOR_PRIMARIA: ${{ secrets.NOMBRE_USUARIO_PROFESOR_PRIMARIA }}
+      CONTRASENA_PROFESOR_PRIMARIA: ${{ secrets.CONTRASENA_PROFESOR_PRIMARIA }}
+      NOMBRE_USUARIO_TUTOR: ${{ secrets.NOMBRE_USUARIO_TUTOR }}
+      CONTRASENA_TUTOR: ${{ secrets.CONTRASENA_TUTOR }}
+      DNI_ADMIN: ${{ secrets.DNI_ADMIN }}
+      DNI_AUXILIAR: ${{ secrets.DNI_AUXILIAR }} 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: 'API01/**/*.js'
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run K6 Check
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "📋 Archivos modificados detectados"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          test_failed=0
+          
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ "$file" != *"urlManager.js"* ]] && [[ "$file" == API01/* ]]; then
+              echo ""
+              echo "🛡️ Validando: $file"
+              
+              # Ejecutar test con thresholds override
+              # Si el archivo tiene thresholds propios, usa esos
+              # Si no, aplica thresholds básicos de validación
+              if k6 run \
+                --summary-export=summary-${file//\//-}.json \
+                --out json=results-${file//\//-}.json \
+                "$file"; then
+                echo "✅ Test pasó validación"
+              else
+                echo "❌ Test FALLÓ - PR bloqueado"
+                test_failed=1
+              fi
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            fi
+          done
+          
+          if [ $test_failed -eq 1 ]; then
+            echo ""
+            echo "❌ Uno o más tests fallaron. El PR no puede ser mergeado."
+            exit 1
+          fi
+          
+          echo ""
+          echo "✅ Todos los tests pasaron. PR listo para revisión."
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-validation-results
+          path: |
+            summary-*.json
+            results-*.json
+          retention-days: 30
