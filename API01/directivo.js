@@ -21,7 +21,3 @@ export function getToken() {
   return token; 
 }
 
-export default function() {
-  const token = getToken();
-  console.log(`Token obtenido: ${token}`);
-}
