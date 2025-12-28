@@ -6,7 +6,6 @@ export let options = {
     duration: '10s',
 };
 
-
   const loginPayload = JSON.stringify({
     Nombre_Usuario: __ENV.NOMBRE_USUARIO_DIRECTIVO,
     Contraseña: __ENV.CONTRASENA_DIRECTIVO,

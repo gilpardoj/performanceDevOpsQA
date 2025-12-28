@@ -1,12 +1,10 @@
 name: K6 Validations
 
 on:
-  # Se dispara cuando abres un PR hacia main o develop
   pull_request:
-    branches: [ main, develop ]
-    paths: [ 'API01/**/*.js' ] # Solo si tocas archivos de la API
+    branches: [ main ]
+    paths: [ 'API01/**/*.js' ]
 
-  # Mantén el workflow_dispatch si quieres pruebas manuales
   workflow_dispatch: 
     inputs:
       environment:
