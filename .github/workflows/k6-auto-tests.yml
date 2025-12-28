@@ -47,34 +47,58 @@ jobs:
       DNI_AUXILIAR: ${{ secrets.DNI_AUXILIAR }} 
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
+          - name: Checkout code
+            uses: actions/checkout@v4
+            with:
+              fetch-depth: 2
 
-      - name: Detect changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v41
-        with:
-          files: 'API01/**/*.js'
+          - name: Detect changed files
+            id: changed-files
+            uses: tj-actions/changed-files@v41
+            with:
+              files: 'API01/**/*.js'
 
-      - name: Setup k6
-        uses: grafana/setup-k6-action@v1
+          - name: Setup k6
+            uses: grafana/setup-k6-action@v1
 
-      - name: Run Tests in Cloud
-        if: steps.changed-files.outputs.any_changed == 'true'
-        run: |
-          echo "☁️ Iniciando ejecución en Grafana Cloud (Ambiente: $TARGET_ENV)..."
-          
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            # Filtramos utilidades y helpers
-            if [[ "$file" != *"urlManager.js"* ]] && [[ "$file" == API01/* ]]; then
+          - name: Run Tests in Cloud
+            if: steps.changed-files.outputs.any_changed == 'true'
+            run: |
+              echo "☁️ Iniciando ejecución en Grafana Cloud (Ambiente: $TARGET_ENV)..."
               
-              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-              echo "🚀 Enviando a la nube: $file"
-              
-              # Ejecutar en la nube
-              k6 cloud "$file"
-              
-            fi
-          done
+              for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+                # Filtramos utilidades y helpers
+                if [[ "$file" != *"urlManager.js"* ]] && [[ "$file" == API01/* ]]; then
+                  
+                  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                  echo "🚀 Enviando a la nube: $file"
+                  
+                  # --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE ---
+                  # Pasamos cada variable con -e para que llegue a la nube
+                  k6 cloud "$file" \
+                    -e TARGET_ENV="$TARGET_ENV" \
+                    -e URL_CERT="$URL_CERT" \
+                    -e URL_CERT_INS2="$URL_CERT_INS2" \
+                    -e URL_CERT_INS3="$URL_CERT_INS3" \
+                    -e URL_DEV="$URL_DEV" \
+                    -e URL_DEV_INS2="$URL_DEV_INS2" \
+                    -e URL_PROD="$URL_PROD" \
+                    -e URL_PROD_INS2="$URL_PROD_INS2" \
+                    -e URL_PROD_INS3="$URL_PROD_INS3" \
+                    -e NOMBRE_USUARIO_DIRECTIVO="$NOMBRE_USUARIO_DIRECTIVO" \
+                    -e CONTRASENA_DIRECTIVO="$CONTRASENA_DIRECTIVO" \
+                    -e NOMBRE_USUARIO_AUXILIAR="$NOMBRE_USUARIO_AUXILIAR" \
+                    -e CONTRASENA_AUXILIAR="$CONTRASENA_AUXILIAR" \
+                    -e NOMBRE_USUARIO_NO_TUTOR="$NOMBRE_USUARIO_NO_TUTOR" \
+                    -e CONTRASENA_NO_TUTOR="$CONTRASENA_NO_TUTOR" \
+                    -e NOMBRE_USUARIO_PERSONAL_ADMIN="$NOMBRE_USUARIO_PERSONAL_ADMIN" \
+                    -e CONTRASENA_PERSONAL_ADMIN="$CONTRASENA_PERSONAL_ADMIN" \
+                    -e NOMBRE_USUARIO_PROFESOR_PRIMARIA="$NOMBRE_USUARIO_PROFESOR_PRIMARIA" \
+                    -e CONTRASENA_PROFESOR_PRIMARIA="$CONTRASENA_PROFESOR_PRIMARIA" \
+                    -e NOMBRE_USUARIO_TUTOR="$NOMBRE_USUARIO_TUTOR" \
+                    -e CONTRASENA_TUTOR="$CONTRASENA_TUTOR" \
+                    -e DNI_ADMIN="$DNI_ADMIN" \
+                    -e DNI_AUXILIAR="$DNI_AUXILIAR"
+                  
+                fi
+              done
