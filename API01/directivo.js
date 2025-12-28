@@ -2,6 +2,10 @@ import http from 'k6/http';
 import { check, fail } from 'k6'; 
 import { getBaseUrl } from './utils/urlManager.js'; 
 
+export default function() {
+  getToken();
+}
+
 export function getToken() {
   const baseUrl = getBaseUrl();
   const loginUrl = baseUrl + '/api/login/directivo';
