@@ -94,31 +94,6 @@ git push
 
 Para que funcionen los workflows, debes agregar las credenciales como **secrets**:
 
-### Paso a Paso:
-1. Ve a tu repositorio en GitHub
-2. Settings → Secrets and variables → Actions
-3. Click "New repository secret"
-4. Agrega cada uno:
-
-```
-NOMBRE_USUARIO_DIRECTIVO = director.asuncion8
-CONTRASENA_DIRECTIVO = 15430124
-NOMBRE_USUARIO_AUXILIAR = brigida_gonzales_1535
-CONTRASENA_AUXILIAR = 15357278
-NOMBRE_USUARIO_NO_TUTOR = david_apolinario_1537
-CONTRASENA_NO_TUTOR = 15371028
-NOMBRE_USUARIO_PERSONAL_ADMIN = jose_centeno_4180
-CONTRASENA_PERSONAL_ADMIN = 41809910
-NOMBRE_USUARIO_PROFESOR_PRIMARIA = marisol_godoy_1537
-CONTRASENA_PROFESOR_PRIMARIA = 15378317
-NOMBRE_USUARIO_TUTOR = daniel_sanchez_1542
-CONTRASENA_TUTOR = 15420745
-DNI_ADMIN = 15449593
-DNI_AUXILIAR = 15357278
-```
-
----
-
 ## 📊 Ver Resultados
 
 Después de ejecutar:
