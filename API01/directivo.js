@@ -1,4 +1,3 @@
-import { getToken } from '../../directivo.js';
 import http from 'k6/http';
 import { check } from 'k6';
 import { getBaseUrl } from '../../utils/urlManager.js';
@@ -6,7 +5,7 @@ import { getBaseUrl } from '../../utils/urlManager.js';
 export let options = {
   vus: 12,
   duration: '30s',
-};
+};  
 
 const dniAuxiliar = __ENV.DNI_AUXILIAR;
 
