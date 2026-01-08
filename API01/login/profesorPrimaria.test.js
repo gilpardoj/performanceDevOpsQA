@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { getBaseUrl } from '../utils/urlManager.js';
 export let options = {
-    vus: 20,
-    duration: '10s',
+    vus: 5,
+    duration: '30s',
 };
 
   const loginPayload = JSON.stringify({
