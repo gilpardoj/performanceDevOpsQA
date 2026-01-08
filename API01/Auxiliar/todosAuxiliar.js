@@ -1,4 +1,4 @@
-import { getBaseUrl } from '../../utils/urlManager.js';
+import { getBaseUrl } from '../utils/urlManager.js';
 import { getToken } from '../directivo.js'; 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
