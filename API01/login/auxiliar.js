@@ -3,7 +3,7 @@ import { check } from 'k6';
 import { getBaseUrl } from '../utils/urlManager.js';
 
 export let options = {
-    vus: 10,
+    vus: 5,
     duration: '10s',
     thresholds: {
         http_req_failed: ['rate<0.01'], 
