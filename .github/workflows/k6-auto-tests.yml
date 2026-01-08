@@ -2,17 +2,17 @@ name: K6 Validations
 
 on:
   pull_request:
-<<<<<<< HEAD
+<<<<<<<<< Temporary merge branch 1
     branches: [ main, develop ]
     paths: [ 'API01/**/*.js' ] 
 
   workflow_dispatch: 
-=======
+=========
     branches: [ main ]
     paths: [ 'API01/**/*.js' ]
   
   workflow_dispatch:
->>>>>>> 28838f3ffbb8ef5896658253cb4c573eb34645e0
+>>>>>>>>> Temporary merge branch 2
     inputs:
       environment:
         description: 'Ambiente'
@@ -25,13 +25,13 @@ jobs:
     name: 🚀 Run K6 in Grafana Cloud
     runs-on: ubuntu-latest
     env:
-<<<<<<< HEAD
-=======
+<<<<<<<<< Temporary merge branch 1
+=========
       K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
 
       TARGET_ENV: ${{ github.event.inputs.environment || 'DEV' }} 
       
->>>>>>> 28838f3ffbb8ef5896658253cb4c573eb34645e0
+>>>>>>>>> Temporary merge branch 2
       URL_CERT: "https://api01-siasis-cert.vercel.app"
       URL_CERT_INS2: "https://api01-siasis-cert-ins2.vercel.app"
       URL_CERT_INS3: "https://api01-siasis-cert-ins3.vercel.app"
@@ -40,11 +40,11 @@ jobs:
       URL_PROD: "https://ie20935-api01-ins1.vercel.app"
       URL_PROD_INS2: "https://ie20935-api01-ins2.vercel.app"
       URL_PROD_INS3: "https://ie20935-api01-ins3.vercel.app"
-<<<<<<< HEAD
+<<<<<<<<< Temporary merge branch 1
       
       TARGET_ENV: ${{ github.event.inputs.environment || 'CERT' }}
-=======
->>>>>>> 28838f3ffbb8ef5896658253cb4c573eb34645e0
+=========
+>>>>>>>>> Temporary merge branch 2
 
       NOMBRE_USUARIO_DIRECTIVO: ${{ secrets.NOMBRE_USUARIO_DIRECTIVO }}
       CONTRASENA_DIRECTIVO: ${{ secrets.CONTRASENA_DIRECTIVO }}
