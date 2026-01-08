@@ -17,8 +17,6 @@ jobs:
   cloud_performance_test:
     name: 🚀 Run K6 in Grafana Cloud
     runs-on: ubuntu-latest
-    # Eliminamos el bloque 'env' gigante de aquí para limpiar visualmente.
-    # Las secrets se acceden directo en el 'run'.
 
     steps:
       - name: Checkout code
@@ -45,9 +43,6 @@ jobs:
           
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             
-            # MEJORA: Lógica más robusta. 
-            # Ignoramos cualquier archivo dentro de una carpeta que se llame 'Utils', 'utils', 'Auxiliar', etc.
-            # O simplemente validamos que NO sea el urlManager explícitamente si no quieres renombrar archivos.
             
             if [[ "$file" == *"urlManager.js"* ]]; then
                echo "⏩ Saltando utilidad: $file"
