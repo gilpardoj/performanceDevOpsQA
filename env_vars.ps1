@@ -10,7 +10,7 @@ $env:URL_PROD="https://ie20935-api01-ins1.vercel.app"
 $env:URL_PROD_INS2="https://ie20935-api01-ins2.vercel.app"  
 $env:URL_PROD_INS3="https://ie20935-api01-ins3.vercel.app"
 
-$env:TARGET_ENV="CERT"  
+$env:TARGET_ENV="DEV"  
 
 
 $env:NOMBRE_USUARIO_DIRECTIVO="director.asuncion8"
