@@ -1,12 +1,10 @@
 name: K6 Validations
 
 on:
-  # Se dispara cuando abres un PR hacia main o develop
   pull_request:
     branches: [ main, develop ]
-    paths: [ 'API01/**/*.js' ] # Solo si tocas archivos de la API
+    paths: [ 'API01/**/*.js' ] 
 
-  # Mantén el workflow_dispatch si quieres pruebas manuales
   workflow_dispatch: 
     inputs:
       environment:
@@ -19,7 +17,6 @@ jobs:
   validate_pr:
     runs-on: ubuntu-latest
     env:
-      # URLs
       URL_CERT: "https://api01-siasis-cert.vercel.app"
       URL_CERT_INS2: "https://api01-siasis-cert-ins2.vercel.app"
       URL_CERT_INS3: "https://api01-siasis-cert-ins3.vercel.app"
@@ -29,10 +26,8 @@ jobs:
       URL_PROD_INS2: "https://ie20935-api01-ins2.vercel.app"
       URL_PROD_INS3: "https://ie20935-api01-ins3.vercel.app"
       
-      # En PRs, siempre prueba en CERT (recomendado)
       TARGET_ENV: ${{ github.event.inputs.environment || 'CERT' }}
 
-      # Credenciales desde GitHub Secrets
       NOMBRE_USUARIO_DIRECTIVO: ${{ secrets.NOMBRE_USUARIO_DIRECTIVO }}
       CONTRASENA_DIRECTIVO: ${{ secrets.CONTRASENA_DIRECTIVO }}
       NOMBRE_USUARIO_AUXILIAR: ${{ secrets.NOMBRE_USUARIO_AUXILIAR }}
