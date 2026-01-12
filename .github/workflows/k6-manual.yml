@@ -1,23 +1,24 @@
-name: K6 Manual Search & Run
+name: 🔍 K6 Manual - Smart Search (.test.js)
 
 on:
   workflow_dispatch:
     inputs:
       vus:
-        description: 'Cantidad de VUs'
+        description: 'Cantidad de Usuarios Virtuales (VU)'
         required: true
         default: '20'
       method:
-        description: 'Método (GET, POST, PUT, DELETE)'
+        description: 'Método HTTP'
         required: true
-        default: 'POST'
+        type: choice
+        options: [POST, GET, PUT, DELETE]
       endpoint:
-        description: 'Endpoint (ej: login/directivo)'
+        description: 'Endpoint a buscar (ej: login/directivo)'
         required: true
 
 jobs:
   search_and_execute:
-    name: 🔍 Buscar y Ejecutar en Cloud
+    name: 🚀 Buscar y Ejecutar en Cloud
     runs-on: ubuntu-latest
 
     steps:
@@ -30,20 +31,23 @@ jobs:
       - name: 🔎 Finding matching script
         id: search
         run: |
-          # Convertir método a minúsculas para que coincida con http.post/http.get
-          METHOD_LOWER=$(echo "${{ github.event.inputs.method }}" | tr '[:upper:]' '[:lower:]')
-          ENDPOINT="${{ github.event.inputs.endpoint }}"
+          # 1. Limpiar inputs y normalizar método a minúsculas
+          METHOD_LOWER=$(echo "${{ github.event.inputs.method }}" | tr '[:upper:]' '[:lower:]' | xargs)
+          ENDPOINT=$(echo "${{ github.event.inputs.endpoint }}" | xargs)
           
-          echo "Buscando archivo en API01 con: http.$METHOD_LOWER y endpoint: $ENDPOINT"
-          
-          # Buscar archivos que contengan el método y luego filtrar por el endpoint
-          # -l devuelve solo el nombre del archivo. head -n 1 toma el primero si hay varios.
-          MATCHED_FILE=$(grep -l "http.$METHOD_LOWER" API01/*.js | xargs grep -l "$ENDPOINT" | head -n 1 || true)
+          echo "Buscando en todo el repositorio archivos *.test.js que contengan:"
+          echo "Método: http.$METHOD_LOWER"
+          echo "Endpoint: $ENDPOINT"
+
+          # 2. Búsqueda inteligente:
+          # find . -name "*.test.js" -> Busca solo archivos de prueba
+          # xargs grep -il -> Filtra los que tengan el método (ignorando mayúsculas)
+          # xargs grep -il -> Filtra los que ADEMÁS tengan el endpoint (ignorando mayúsculas)
+          MATCHED_FILE=$(find . -name "*.test.js" | xargs grep -il "http.$METHOD_LOWER" | xargs grep -il "$ENDPOINT" | head -n 1 || true)
 
           if [ -z "$MATCHED_FILE" ]; then
-            echo "❌ ERROR: No se encontró ningún archivo con el método $METHOD_LOWER y el endpoint $ENDPOINT"
+            echo "::error::❌ No se encontró ningún archivo .test.js con el método $METHOD_LOWER y el endpoint $ENDPOINT"
             echo "found=false" >> $GITHUB_OUTPUT
-            exit 0 # Terminamos con éxito el paso pero marcamos que no se encontró nada
           else
             echo "✅ Archivo encontrado: $MATCHED_FILE"
             echo "found=true" >> $GITHUB_OUTPUT
@@ -54,15 +58,19 @@ jobs:
         if: steps.search.outputs.found == 'true'
         env:
           K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
-          # Pasamos los VUs capturados del input
           VUS: ${{ github.event.inputs.vus }}
         run: |
+          FILE_PATH="${{ steps.search.outputs.file_path }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🚀 Ejecutando: ${{ steps.search.outputs.file_path }}"
-          echo "👥 VUs: $VUS"
+          echo "🚀 Ejecutando en la nube: $FILE_PATH"
+          echo "👥 Usuarios Virtuales: $VUS"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
-          k6 cloud "${{ steps.search.outputs.file_path }}" \
+          # Forzamos los VUs y una duración base para asegurar que no haga solo 1 iteración
+          k6 cloud "$FILE_PATH" \
+            --vus "$VUS" \
             -e VUS="$VUS" \
+            -e TARGET_ENV="DEV" \
             -e URL_CERT="https://api01-siasis-cert.vercel.app" \
             -e URL_DEV="https://api01-siasis-dev.vercel.app" \
             -e NOMBRE_USUARIO_DIRECTIVO="${{ secrets.NOMBRE_USUARIO_DIRECTIVO }}" \
