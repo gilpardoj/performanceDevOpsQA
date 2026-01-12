@@ -1,4 +1,4 @@
-name: 🔍 K6 Manual - Smart Search (.test.js)
+name: 🔍 K6 Ejecucion Manual
 
 on:
   workflow_dispatch:
