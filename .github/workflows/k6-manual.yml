@@ -1,0 +1,81 @@
+name: K6 Manual Search & Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      vus:
+        description: 'Cantidad de VUs'
+        required: true
+        default: '20'
+      method:
+        description: 'Método (GET, POST, PUT, DELETE)'
+        required: true
+        default: 'POST'
+      endpoint:
+        description: 'Endpoint (ej: login/directivo)'
+        required: true
+
+jobs:
+  search_and_execute:
+    name: 🔍 Buscar y Ejecutar en Cloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: 🔎 Finding matching script
+        id: search
+        run: |
+          # Convertir método a minúsculas para que coincida con http.post/http.get
+          METHOD_LOWER=$(echo "${{ github.event.inputs.method }}" | tr '[:upper:]' '[:lower:]')
+          ENDPOINT="${{ github.event.inputs.endpoint }}"
+          
+          echo "Buscando archivo en API01 con: http.$METHOD_LOWER y endpoint: $ENDPOINT"
+          
+          # Buscar archivos que contengan el método y luego filtrar por el endpoint
+          # -l devuelve solo el nombre del archivo. head -n 1 toma el primero si hay varios.
+          MATCHED_FILE=$(grep -l "http.$METHOD_LOWER" API01/*.js | xargs grep -l "$ENDPOINT" | head -n 1 || true)
+
+          if [ -z "$MATCHED_FILE" ]; then
+            echo "❌ ERROR: No se encontró ningún archivo con el método $METHOD_LOWER y el endpoint $ENDPOINT"
+            echo "found=false" >> $GITHUB_OUTPUT
+            exit 0 # Terminamos con éxito el paso pero marcamos que no se encontró nada
+          else
+            echo "✅ Archivo encontrado: $MATCHED_FILE"
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "file_path=$MATCHED_FILE" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🚀 Run in K6 Cloud
+        if: steps.search.outputs.found == 'true'
+        env:
+          K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
+          # Pasamos los VUs capturados del input
+          VUS: ${{ github.event.inputs.vus }}
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🚀 Ejecutando: ${{ steps.search.outputs.file_path }}"
+          echo "👥 VUs: $VUS"
+          
+          k6 cloud "${{ steps.search.outputs.file_path }}" \
+            -e VUS="$VUS" \
+            -e URL_CERT="https://api01-siasis-cert.vercel.app" \
+            -e URL_DEV="https://api01-siasis-dev.vercel.app" \
+            -e NOMBRE_USUARIO_DIRECTIVO="${{ secrets.NOMBRE_USUARIO_DIRECTIVO }}" \
+            -e CONTRASENA_DIRECTIVO="${{ secrets.CONTRASENA_DIRECTIVO }}" \
+            -e NOMBRE_USUARIO_AUXILIAR="${{ secrets.NOMBRE_USUARIO_AUXILIAR }}" \
+            -e CONTRASENA_AUXILIAR="${{ secrets.CONTRASENA_AUXILIAR }}" \
+            -e NOMBRE_USUARIO_NO_TUTOR="${{ secrets.NOMBRE_USUARIO_NO_TUTOR }}" \
+            -e CONTRASENA_NO_TUTOR="${{ secrets.CONTRASENA_NO_TUTOR }}" \
+            -e NOMBRE_USUARIO_PERSONAL_ADMIN="${{ secrets.NOMBRE_USUARIO_PERSONAL_ADMIN }}" \
+            -e CONTRASENA_PERSONAL_ADMIN="${{ secrets.CONTRASENA_PERSONAL_ADMIN }}" \
+            -e NOMBRE_USUARIO_PROFESOR_PRIMARIA="${{ secrets.NOMBRE_USUARIO_PROFESOR_PRIMARIA }}" \
+            -e CONTRASENA_PROFESOR_PRIMARIA="${{ secrets.CONTRASENA_PROFESOR_PRIMARIA }}" \
+            -e NOMBRE_USUARIO_TUTOR="${{ secrets.NOMBRE_USUARIO_TUTOR }}" \
+            -e CONTRASENA_TUTOR="${{ secrets.CONTRASENA_TUTOR }}" \
+            -e DNI_ADMIN="${{ secrets.DNI_ADMIN }}" \
+            -e DNI_AUXILIAR="${{ secrets.DNI_AUXILIAR }}"

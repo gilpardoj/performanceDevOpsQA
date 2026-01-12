@@ -2,18 +2,12 @@ export function getBaseUrl(environment = 'CERT') {
   const envUrls = {
     CERT: [
       __ENV.URL_CERT,
-      __ENV.URL_CERT_INS2, 
-      __ENV.URL_CERT_INS3
     ],
     DEV: [
-      __ENV.URL_DEV,
-      __ENV.URL_DEV_INS2,
-      
+      __ENV.URL_DEV,      
     ],
     PROD: [
       __ENV.URL_PROD,
-      __ENV.URL_DEV_INS2, 
-      __ENV.URL_PROD_INS3
     ]
   };
 
