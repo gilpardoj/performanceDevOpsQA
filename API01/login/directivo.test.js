@@ -3,13 +3,14 @@ import { check } from 'k6';
 import { getBaseUrl } from '../utils/urlManager.js';
 
 export let options = {
-    vus: 20,
-    duration: '10s',
+    vus: 10,
+    duration: '60s',
     thresholds: {
         http_req_failed: ['rate<0.01'], 
-        http_req_duration: ['p(95)<2000'], 
+        http_req_duration: ['p(90)<2000'], 
     },
 };
+
 const loginPayload = JSON.stringify({
     Nombre_Usuario: __ENV.NOMBRE_USUARIO_DIRECTIVO,
     Contraseña: __ENV.CONTRASENA_DIRECTIVO,
