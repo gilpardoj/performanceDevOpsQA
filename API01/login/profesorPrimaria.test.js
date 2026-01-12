@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { getBaseUrl } from '../utils/urlManager.js';
 export let options = {
-    vus: 5,
+    vus: __ENV.VUS || 10,
     duration: '30s',
 };
 
