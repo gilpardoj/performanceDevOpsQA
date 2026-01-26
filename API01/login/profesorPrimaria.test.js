@@ -24,5 +24,4 @@ export default function () {
         'is status 200': (r) => r.status === 200,
         'is response time < 2000ms': (r) => r.timings.duration < 2000,
     });
-
 }
