@@ -2,6 +2,16 @@ import http from 'k6/http';
 import { check, fail } from 'k6'; 
 import { getBaseUrl } from './utils/urlManager.js'; 
 
+export const options = {
+  ext: {
+    loadimpact: {
+      distribution: {
+        'amazon:br:sao paulo': { loadZone: 'amazon:br:sao paulo', percent: 100 }
+      }
+    }
+  }
+};
+
 export default function() {
   getToken();
 }
