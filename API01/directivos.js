@@ -3,11 +3,12 @@ import { check } from 'k6';
 
 export let options = {
     vus: __ENV.VUS || 10,           
-    duration: '60s',   
+    duration: '30',   
 };
 
 export default function () {
     const url = 'https://api01-siasis-dev.vercel.app/api/login/directivo';
+
     const payload = JSON.stringify({
         Nombre_Usuario: 'director.asuncion8',
         Contraseña: '15430124',
